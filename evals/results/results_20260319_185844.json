@@ -1,0 +1,51 @@
+{
+  "accuracy": 1.0,
+  "avg_latency_ms": 767.98,
+  "avg_similarity_score": 1.0,
+  "total": 3,
+  "correct": 3,
+  "results": [
+    {
+      "prompt_name": "rag_chat",
+      "prompt_version": "v2",
+      "model": "ollama/llama3.2",
+      "question": "What is the capital of France?",
+      "expected": "Paris",
+      "actual": "Paris.",
+      "correct": true,
+      "latency_ms": 751.47,
+      "similarity_score": 1.0,
+      "normalized_expected": "paris",
+      "normalized_actual": "paris",
+      "evaluation_method_used": "exact"
+    },
+    {
+      "prompt_name": "rag_chat",
+      "prompt_version": "v2",
+      "model": "ollama/llama3.2",
+      "question": "What is 2 + 2?",
+      "expected": "4",
+      "actual": "4",
+      "correct": true,
+      "latency_ms": 975.35,
+      "similarity_score": 1.0,
+      "normalized_expected": "4",
+      "normalized_actual": "4",
+      "evaluation_method_used": "exact"
+    },
+    {
+      "prompt_name": "rag_chat",
+      "prompt_version": "v2",
+      "model": "ollama/llama3.2",
+      "question": "What color is the sky on a clear day?",
+      "expected": "blue",
+      "actual": "Blue.",
+      "correct": true,
+      "latency_ms": 577.12,
+      "similarity_score": 1.0,
+      "normalized_expected": "blue",
+      "normalized_actual": "blue",
+      "evaluation_method_used": "exact"
+    }
+  ]
+}

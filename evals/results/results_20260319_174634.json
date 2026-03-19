@@ -1,0 +1,38 @@
+{
+  "accuracy": 1.0,
+  "avg_latency_ms": 1.44,
+  "total": 3,
+  "correct": 3,
+  "results": [
+    {
+      "question": "What is the capital of France?",
+      "expected": "Paris",
+      "actual": "",
+      "correct": true,
+      "latency_ms": 3.84,
+      "prompt_name": "rag_chat",
+      "prompt_version": "unknown",
+      "model": "unknown"
+    },
+    {
+      "question": "What is 2 + 2?",
+      "expected": "4",
+      "actual": "",
+      "correct": true,
+      "latency_ms": 0.25,
+      "prompt_name": "rag_chat",
+      "prompt_version": "unknown",
+      "model": "unknown"
+    },
+    {
+      "question": "What color is the sky on a clear day?",
+      "expected": "blue",
+      "actual": "",
+      "correct": true,
+      "latency_ms": 0.24,
+      "prompt_name": "rag_chat",
+      "prompt_version": "unknown",
+      "model": "unknown"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "accuracy": 0.3333,
+  "avg_latency_ms": 3886.35,
+  "total": 3,
+  "correct": 1,
+  "results": [
+    {
+      "question": "What is the capital of France?",
+      "expected": "Paris",
+      "actual": "I don't have enough information to answer your question. The provided context is empty and doesn't contain any relevant details about France or its capital.",
+      "correct": false,
+      "latency_ms": 4904.65,
+      "prompt_name": "rag_chat",
+      "prompt_version": "v1",
+      "model": "ollama/llama3.2"
+    },
+    {
+      "question": "What is 2 + 2?",
+      "expected": "4",
+      "actual": "The answer to 2 + 2 is 4.",
+      "correct": true,
+      "latency_ms": 4936.39,
+      "prompt_name": "rag_chat",
+      "prompt_version": "v1",
+      "model": "ollama/llama3.2"
+    },
+    {
+      "question": "What color is the sky on a clear day?",
+      "expected": "blue",
+      "actual": "I don't have any relevant information to answer that question. The context doesn't provide enough details for me to respond accurately.",
+      "correct": false,
+      "latency_ms": 1818.02,
+      "prompt_name": "rag_chat",
+      "prompt_version": "v1",
+      "model": "ollama/llama3.2"
+    }
+  ]
+}

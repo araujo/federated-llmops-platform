@@ -1,0 +1,25 @@
+{
+  "prompt_name": "rag_chat",
+  "prompt_versions": [
+    "v1",
+    "v2"
+  ],
+  "dataset_size": 3,
+  "by_version": {
+    "v1": {
+      "accuracy": 1.0,
+      "avg_latency_ms": 860.19,
+      "avg_similarity_score": 0.7083,
+      "correct": 3,
+      "total": 3
+    },
+    "v2": {
+      "accuracy": 1.0,
+      "avg_latency_ms": 2295.31,
+      "avg_similarity_score": 0.7083,
+      "correct": 3,
+      "total": 3
+    }
+  },
+  "timestamp": "20260319_185601"
+}
