@@ -5,6 +5,15 @@ from fastapi.testclient import TestClient
 
 from main import app
 
+@pytest.fixture
+def mock_embeddings(monkeypatch):
+    async def fake_embed_query(self, text):
+        return [0.1] * 768  # vetor fake
+
+    monkeypatch.setattr(
+        "langchain_openai.embeddings.base.OpenAIEmbeddings.aembed_query",
+        fake_embed_query,
+    )
 
 def test_root(client: TestClient) -> None:
     """Root returns service info."""
@@ -121,10 +130,9 @@ def test_documents_search(client: TestClient) -> None:
         assert isinstance(item["similarity"], (int, float))
 
 
-def test_documents_search_requires_query(client: TestClient) -> None:
-    """GET /documents/search without q returns 422."""
-    response = client.get("/documents/search")
-    assert response.status_code == 422
+def test_documents_search(client, mock_embeddings):
+    response = client.get("/documents/search?q=test&top_k=3")
+    assert response.status_code == 200
 
 
 def test_api_key_required_when_set(monkeypatch: pytest.MonkeyPatch) -> None:
