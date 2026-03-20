@@ -87,6 +87,24 @@ services:
     environment:
       REDIS_AUTH: ${REDIS_AUTH:-myredissecret}
 
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-mongosecret}
+      MONGO_INITDB_DATABASE: llmops
+    volumes:
+      - mongodb_data:/data/db
+      - ./infrastructure/mongodb/init-prompts.js:/docker-entrypoint-initdb.d/init-prompts.js:ro
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   clickhouse:
     image: clickhouse/clickhouse-server
     restart: unless-stopped
@@ -231,6 +249,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongodb:
+        condition: service_healthy
       minio-init:
         condition: service_completed_successfully
       litellm:
@@ -258,6 +278,8 @@ services:
       MINIO_USER: ${MINIO_ROOT_USER:-minio}
       MINIO_PASSWORD: ${MINIO_ROOT_PASSWORD:-miniosecret}
       MINIO_BUCKET: documents
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD:-mongosecret}@mongodb:27017?authSource=admin
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-llmops}
     ports:
       - "8000:8000"
     healthcheck:
@@ -272,6 +294,7 @@ networks:
     name: llmops
 
 volumes:
+  mongodb_data:
   postgres_data:
   langfuse_db_data:
   minio_data:

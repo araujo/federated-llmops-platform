@@ -15,9 +15,26 @@ class HealthStatus(BaseModel):
 
     status: str
     postgres: str
+    mongodb: str
     minio: str
     litellm: str
     langfuse: str
+
+
+async def _check_mongodb(settings: Settings) -> bool:
+    """Check MongoDB connectivity (only when MongoDB is configured)."""
+    uri = (settings.mongodb_uri or "").strip()
+    if not uri or uri == "memory://":
+        return True  # in-memory mode, no MongoDB to check
+    try:
+        from pymongo import MongoClient
+
+        client = MongoClient(uri, serverSelectionTimeoutMS=3000)
+        client.admin.command("ping")
+        client.close()
+        return True
+    except Exception:
+        return False
 
 
 async def _check_postgres(settings: Settings) -> bool:
@@ -74,16 +91,18 @@ async def _check_langfuse(settings: Settings) -> bool:
 async def health(settings: Settings = Depends(get_settings)) -> HealthStatus:
     """Check health of critical dependencies."""
     postgres_ok = await _check_postgres(settings)
+    mongodb_ok = await _check_mongodb(settings)
     minio_ok = await _check_minio(settings)
     litellm_ok = await _check_litellm(settings)
     langfuse_ok = await _check_langfuse(settings)
 
-    all_ok = postgres_ok and minio_ok and litellm_ok and langfuse_ok
+    all_ok = postgres_ok and mongodb_ok and minio_ok and litellm_ok and langfuse_ok
     status = "ok" if all_ok else "degraded"
 
     return HealthStatus(
         status=status,
         postgres="ok" if postgres_ok else "unavailable",
+        mongodb="ok" if mongodb_ok else "unavailable",
         minio="ok" if minio_ok else "unavailable",
         litellm="ok" if litellm_ok else "unavailable",
         langfuse="ok" if langfuse_ok else "unavailable",

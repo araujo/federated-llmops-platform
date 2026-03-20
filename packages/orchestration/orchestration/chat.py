@@ -72,6 +72,7 @@ async def chat_rag(
     top_k: int = 5,
     prompt_name: str = "rag_chat",
     prompt_version: str | None = None,
+    prompt_alias: str | None = None,
     langfuse_handler: CallbackHandler | None = None,
 ) -> tuple[str, dict[str, Any]]:
     """RAG chat - always RAG. Delegates to execution layer."""
@@ -85,6 +86,7 @@ async def chat_rag(
         top_k=top_k,
         prompt_name=prompt_name,
         prompt_version=prompt_version,
+        prompt_alias=prompt_alias,
         langfuse_handler=langfuse_handler,
     )
 
@@ -99,6 +101,7 @@ async def chat_smart(
     chat_model: str,
     top_k: int = 5,
     min_similarity: float = 0.0,
+    prompt_alias: str | None = None,
     langfuse_handler: CallbackHandler | None = None,
 ) -> tuple[str, dict[str, Any]]:
     """Smart chat - decision layer chooses RAG or direct based on context.
@@ -126,6 +129,7 @@ async def chat_smart(
             chat_model=chat_model,
             top_k=top_k,
             context_chunks=chunks,
+            prompt_alias=prompt_alias,
             langfuse_handler=langfuse_handler,
         )
     # direct
@@ -167,6 +171,8 @@ async def chat_rag_stream(
     embedding_model: str,
     chat_model: str,
     top_k: int = 5,
+    prompt_version: str | None = None,
+    prompt_alias: str | None = None,
     langfuse_handler: CallbackHandler | None = None,
 ) -> AsyncIterator[str]:
     """RAG chat streaming. Delegates to execution layer."""
@@ -178,6 +184,8 @@ async def chat_rag_stream(
         embedding_model=embedding_model,
         chat_model=chat_model,
         top_k=top_k,
+        prompt_version=prompt_version,
+        prompt_alias=prompt_alias,
         langfuse_handler=langfuse_handler,
     ):
         yield chunk
@@ -193,6 +201,7 @@ async def chat_smart_stream(
     chat_model: str,
     top_k: int = 5,
     min_similarity: float = 0.0,
+    prompt_alias: str | None = None,
     langfuse_handler: CallbackHandler | None = None,
 ) -> AsyncIterator[str]:
     """Smart chat streaming - decision layer chooses strategy, then streams."""
@@ -216,6 +225,7 @@ async def chat_smart_stream(
             chat_model=chat_model,
             top_k=top_k,
             context_chunks=chunks,
+            prompt_alias=prompt_alias,
             langfuse_handler=langfuse_handler,
         ):
             yield chunk

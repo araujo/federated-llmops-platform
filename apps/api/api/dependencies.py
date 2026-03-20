@@ -1,5 +1,6 @@
 """FastAPI dependencies: config, Langfuse callback, embeddings, DB pool."""
 
+import logging
 from functools import lru_cache
 
 import asyncpg
@@ -41,6 +42,10 @@ class Settings(BaseSettings):
     minio_user: str = "minio"
     minio_password: str = "miniosecret"
     minio_bucket: str = "documents"
+
+    # MongoDB - prompt registry (use memory:// or empty for in-memory in tests)
+    mongodb_uri: str = "mongodb://root:mongosecret@mongodb:27017?authSource=admin"
+    mongodb_database: str = "llmops"
 
 
 @lru_cache
@@ -99,3 +104,55 @@ async def close_pool() -> None:
     if _pool:
         await _pool.close()
         _pool = None
+
+
+# MongoDB client for prompt registry
+_mongo_client = None
+_mongo_database = ""
+
+
+def get_mongo_db():
+    """Get MongoDB database for prompts. Raises if not initialized."""
+    if _mongo_client is None:
+        raise RuntimeError("MongoDB client not initialized")
+    return _mongo_client[_mongo_database]
+
+
+def init_mongo(settings: Settings) -> bool:
+    """Create MongoDB client for prompt registry.
+
+    Returns True if MongoDB is used, False if in-memory fallback.
+    Startup does not break if Mongo is unreachable; falls back to in-memory.
+    """
+    global _mongo_client, _mongo_database
+    uri = (settings.mongodb_uri or "").strip()
+    if not uri or uri == "memory://":
+        _mongo_client = None
+        _mongo_database = ""
+        return False
+    try:
+        from pymongo import MongoClient
+
+        client = MongoClient(
+            uri,
+            serverSelectionTimeoutMS=5000,
+        )
+        client.admin.command("ping")
+        _mongo_client = client
+        _mongo_database = settings.mongodb_database
+        return True
+    except Exception as e:
+        logging.getLogger(__name__).warning(
+            "MongoDB unreachable, using in-memory prompt registry: %s", e
+        )
+        _mongo_client = None
+        _mongo_database = ""
+        return False
+
+
+def close_mongo() -> None:
+    """Close MongoDB client."""
+    global _mongo_client
+    if _mongo_client:
+        _mongo_client.close()
+        _mongo_client = None

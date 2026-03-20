@@ -102,6 +102,7 @@ async def execute_rag(
     context_chunks: list[dict] | None = None,
     prompt_name: str = "rag_chat",
     prompt_version: str | None = None,
+    prompt_alias: str | None = None,
     langfuse_handler: CallbackHandler | None = None,
 ) -> tuple[str, dict[str, Any]]:
     """Execute RAG: use provided chunks or fetch, then generate.
@@ -110,9 +111,13 @@ async def execute_rag(
         context_chunks: Optional pre-fetched chunks. If None, fetches.
         prompt_name: Prompt template name. Default rag_chat.
         prompt_version: Prompt version (e.g. v1, v2). None = latest.
+        prompt_alias: Optional alias (e.g. production). Takes precedence over prompt_version.
     """
-    version = prompt_version if prompt_version else "latest"
-    prompt = load_prompt(prompt_name, version)
+    if prompt_alias is not None:
+        prompt = load_prompt(prompt_name, alias=prompt_alias)
+    else:
+        version = prompt_version if prompt_version else "latest"
+        prompt = load_prompt(prompt_name, version)
     llm = _get_llm(
         base_url, api_key,
         prompt.metadata.model or chat_model,
@@ -146,6 +151,10 @@ async def execute_rag(
         "model": prompt.metadata.model or chat_model,
         "temperature": prompt.metadata.temperature,
     }
+    if prompt_alias is not None:
+        metadata["prompt_alias"] = prompt_alias
+    elif prompt.metadata.alias:
+        metadata["prompt_alias"] = prompt.metadata.alias
     usage = _extract_usage(response)
     if usage.get("prompt_tokens") is not None:
         metadata["prompt_tokens"] = usage["prompt_tokens"]
@@ -184,11 +193,15 @@ async def execute_rag_stream(
     context_chunks: list[dict] | None = None,
     prompt_name: str = "rag_chat",
     prompt_version: str | None = None,
+    prompt_alias: str | None = None,
     langfuse_handler: CallbackHandler | None = None,
 ) -> AsyncIterator[str]:
     """Execute RAG streaming. Uses context_chunks if provided."""
-    version = prompt_version if prompt_version else "latest"
-    prompt = load_prompt(prompt_name, version)
+    if prompt_alias is not None:
+        prompt = load_prompt(prompt_name, alias=prompt_alias)
+    else:
+        version = prompt_version if prompt_version else "latest"
+        prompt = load_prompt(prompt_name, version)
     llm = _get_llm(
         base_url, api_key,
         prompt.metadata.model or chat_model,

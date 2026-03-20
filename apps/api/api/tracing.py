@@ -13,6 +13,7 @@ def build_chat_metadata(
     *,
     prompt_name: str | None = None,
     prompt_version: str | None = None,
+    prompt_alias: str | None = None,
     model: str | None = None,
     temperature: float | None = None,
     prompt_tokens: int | None = None,
@@ -32,6 +33,8 @@ def build_chat_metadata(
         meta["prompt_name"] = str(prompt_name)
     if prompt_version is not None:
         meta["prompt_version"] = str(prompt_version)
+    if prompt_alias is not None:
+        meta["prompt_alias"] = str(prompt_alias)
     if model is not None:
         meta["model"] = str(model)
     if temperature is not None:

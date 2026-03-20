@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Federated LLMOps Platform API"
 requires-python = ">=3.11"
 dependencies = [
-    "llmops-prompts",
+    "llmops-prompts[mongodb]",
     "llmops-retrieval",
     "llmops-orchestration",
     "llmops-tools",

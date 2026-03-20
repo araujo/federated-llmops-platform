@@ -28,6 +28,7 @@ class ChatRequest(BaseModel):
 
     message: str
     prompt_version: str | None = None  # e.g. v1, v2; None = latest
+    prompt_alias: str | None = None  # e.g. production; takes precedence over prompt_version
 
 
 class ChatResponse(BaseModel):
@@ -71,6 +72,7 @@ async def chat(
         latency_ms=latency_ms,
         prompt_name=metadata.get("prompt_name"),
         prompt_version=metadata.get("prompt_version"),
+        prompt_alias=metadata.get("prompt_alias"),
         model=metadata.get("model"),
         temperature=metadata.get("temperature"),
         prompt_tokens=metadata.get("prompt_tokens"),
@@ -141,6 +143,7 @@ async def chat_rag(
         chat_model=settings.litellm_model,
         top_k=5,
         prompt_version=body.prompt_version,
+        prompt_alias=body.prompt_alias,
         langfuse_handler=handler,
     )
     latency_ms = (time.perf_counter() - start) * 1000
@@ -150,6 +153,7 @@ async def chat_rag(
         latency_ms=latency_ms,
         prompt_name=metadata.get("prompt_name"),
         prompt_version=metadata.get("prompt_version"),
+        prompt_alias=metadata.get("prompt_alias"),
         model=metadata.get("model"),
         temperature=metadata.get("temperature"),
         prompt_tokens=metadata.get("prompt_tokens"),
@@ -183,6 +187,8 @@ async def chat_rag_stream(
                 embedding_model=settings.litellm_embedding_model,
                 chat_model=settings.litellm_model,
                 top_k=5,
+                prompt_version=body.prompt_version,
+                prompt_alias=body.prompt_alias,
                 langfuse_handler=handler,
             ):
                 yield chunk
@@ -222,6 +228,7 @@ async def chat_smart(
         embedding_model=settings.litellm_embedding_model,
         chat_model=settings.litellm_model,
         top_k=5,
+        prompt_alias=body.prompt_alias,
         langfuse_handler=handler,
     )
     latency_ms = (time.perf_counter() - start) * 1000
@@ -232,6 +239,7 @@ async def chat_smart(
         latency_ms=latency_ms,
         prompt_name=metadata.get("prompt_name"),
         prompt_version=metadata.get("prompt_version"),
+        prompt_alias=metadata.get("prompt_alias"),
         model=metadata.get("model"),
         temperature=metadata.get("temperature"),
         prompt_tokens=metadata.get("prompt_tokens"),
@@ -265,6 +273,7 @@ async def chat_smart_stream(
                 embedding_model=settings.litellm_embedding_model,
                 chat_model=settings.litellm_model,
                 top_k=5,
+                prompt_alias=body.prompt_alias,
                 langfuse_handler=handler,
             ):
                 yield chunk

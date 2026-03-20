@@ -5,17 +5,37 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.dependencies import close_pool, get_settings, init_pool
+from api.dependencies import (
+    close_mongo,
+    close_pool,
+    get_mongo_db,
+    get_settings,
+    init_mongo,
+    init_pool,
+)
 from api.middleware import RateLimitMiddleware, RequestIDMiddleware
 from api.routes import chat, documents, health, metrics, prompts
+from prompts import init_registry
+from prompts.registry import PromptRegistry
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup: init Postgres pool. Shutdown: close pool."""
+    """Startup: init Postgres pool, MongoDB (or in-memory), prompt registry. Shutdown: close all."""
     settings = get_settings()
     await init_pool(settings)
+    use_mongo = init_mongo(settings)
+    if use_mongo:
+        from prompts.repository_mongo import MongoPromptRepository
+
+        repo = MongoPromptRepository(get_mongo_db())
+    else:
+        from prompts.repository import InMemoryPromptRepository
+
+        repo = InMemoryPromptRepository()
+    init_registry(PromptRegistry(repo))
     yield
+    close_mongo()
     await close_pool()
 
 

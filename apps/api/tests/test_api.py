@@ -31,6 +31,7 @@ def test_health(client: TestClient) -> None:
     data = response.json()
     assert "status" in data
     assert "postgres" in data
+    assert "mongodb" in data
     assert "minio" in data
     assert "litellm" in data
     assert "langfuse" in data
@@ -66,6 +67,9 @@ def test_documents_delete_invalid_id(client: TestClient) -> None:
     """Delete with invalid UUID returns 400."""
     response = client.delete("/documents/not-a-uuid")
     assert response.status_code == 400
+
+
+# --- Prompt API tests (use in-memory registry via MONGODB_URI=memory://, no real MongoDB) ---
 
 
 def test_prompts_list(client: TestClient) -> None:
@@ -111,10 +115,75 @@ def test_prompts_get_specific(client: TestClient) -> None:
     assert "{context}" in data["content"]
 
 
+def test_prompts_get_by_alias(client: TestClient) -> None:
+    """GET /prompts/{name}?alias=latest returns prompt for that alias."""
+    response = client.get("/prompts/rag_chat?alias=latest")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "rag_chat"
+    assert data["version"] == "v2"
+    assert "content" in data
+    assert "{context}" in data["content"]
+
+
+def test_prompts_get_version_latest(client: TestClient) -> None:
+    """GET /prompts/{name}/latest resolves to highest version."""
+    response = client.get("/prompts/rag_chat/latest")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "rag_chat"
+    assert data["version"] == "v2"
+
+
+def test_prompts_get_by_alias_on_version_endpoint(client: TestClient) -> None:
+    """GET /prompts/{name}/{version}?alias=latest loads by alias."""
+    response = client.get("/prompts/rag_chat/v1?alias=latest")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["version"] == "v2"
+
+
+def test_prompts_metadata_includes_variables(client: TestClient) -> None:
+    """GET /prompts/{name}/{version} includes variables in metadata when present."""
+    response = client.get("/prompts/rag_chat/v1?include_content=true")
+    assert response.status_code == 200
+    data = response.json()
+    assert "metadata" in data
+    assert "variables" in data["metadata"]
+    assert "context" in data["metadata"]["variables"]
+
+
 def test_prompts_not_found(client: TestClient) -> None:
     """GET /prompts/{name} returns 404 for unknown prompt."""
     response = client.get("/prompts/nonexistent")
     assert response.status_code == 404
+
+
+def test_prompts_version_not_found(client: TestClient) -> None:
+    """GET /prompts/{name}/{version} returns 404 for unknown version."""
+    response = client.get("/prompts/rag_chat/v99")
+    assert response.status_code == 404
+
+
+def test_prompts_alias_not_found(client: TestClient) -> None:
+    """GET /prompts/{name}?alias=X returns 404 for unknown alias."""
+    response = client.get("/prompts/rag_chat?alias=production")
+    assert response.status_code == 404
+
+
+def test_prompts_version_endpoint_alias_not_found(client: TestClient) -> None:
+    """GET /prompts/{name}/{version}?alias=X returns 404 for unknown alias."""
+    response = client.get("/prompts/rag_chat/v1?alias=nonexistent")
+    assert response.status_code == 404
+
+
+def test_prompts_content_optional_by_alias(client: TestClient) -> None:
+    """GET /prompts/{name}?alias=latest&include_content=false omits content."""
+    response = client.get("/prompts/rag_chat?alias=latest&include_content=false")
+    assert response.status_code == 200
+    data = response.json()
+    assert "content" not in data
+    assert data["version"] == "v2"
 
 
 def test_documents_search(client: TestClient) -> None:
